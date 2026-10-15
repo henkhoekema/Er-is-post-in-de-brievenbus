@@ -1,0 +1,296 @@
+  - id: brievenbus_post_gedetecteerd
+    alias: Brievenbus - Post gedetecteerd
+    initial_state: true
+    description: >
+      Registreert nieuwe post alleen wanneer de klep beweegt,
+      de deur gesloten is en er niet recent een deuropening is geweest.
+      Zo worden bewegingen van de eigen hand tijdens het controleren
+      van de brievenbus niet als postbezorging geregistreerd.
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.brievenbus_klep
+        from: "off"
+        to: "on"
+    conditions:
+      # Voorkom dubbele postmeldingen binnen 60 seconden
+      # (Contactdender-onderdrukking)
+      - condition: template
+        value_template: >
+          {% set laatste = states('input_datetime.brievenbus_laatste_detectie') %}
+          {{ laatste in ['unknown','unavailable','none','']
+             or (as_timestamp(now()) -
+             as_timestamp(laatste,0)) >= 60 }}
+    actions:
+      # Wacht 3 seconden zodat een deuropening geregistreerd kan worden
+      - delay:
+          seconds: 3
+      # Negeer beweging als de deur nog openstaat
+      - condition: state
+        entity_id: binary_sensor.brievenbus_deur
+        state: "off"
+
+      # In dit geval staat de onderstaande conditie bewust onder actions, en dat is correct.
+      # Het verschil zit in wanneer Home Assistant de controle moet uitvoeren.
+      # Onder conditions worden de voorwaarden gecontroleerd voordat de automation begint.
+      # Op dat moment is de deuropening mogelijk nog niet geregistreerd omdat
+      # we de klepsensor eerst 15 seconden de tijd willen geven.
+
+      # Negeer beweging binnen 15 seconden na de laatste deuropening
+      - condition: template
+        value_template: >
+          {% set deur = states('input_datetime.brievenbus_laatste_deuropening') %}
+          {{ deur in ['unknown','unavailable','none','']
+             or (as_timestamp(now()) -
+             as_timestamp(deur,0)) > 15 }}
+      # Registreer de post
+      - action: counter.increment
+        target:
+          entity_id: counter.brievenbus_post_vandaag
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.brievenbus_laatste_detectie
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.brievenbus_afgehandeld
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.brievenbus_onderweg
+      - action: script.turn_off
+        target:
+          entity_id: script.brievenbus_notificaties
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          message: clear_notification
+          data:
+            tag: brievenbus
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          message: clear_notification
+          data:
+            tag: brievenbus
+      # Alleen direct meldingen sturen tussen 07:00 en 22:00
+      - choose:
+          - conditions:
+              - condition: time
+                after: "07:00:00"
+                before: "22:00:00"
+            sequence:
+              - action: script.turn_on
+                target:
+                  entity_id: script.brievenbus_notificaties
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+# Henk drukt JA
+  - id: brievenbus_henk_ja
+    alias: Brievenbus - Henk ja
+    initial_state: true
+    triggers:
+      - trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: BRIEVENBUS_HENK_JA
+    actions:
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: "Henk gaat de brievenbus legen."
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.brievenbus_onderweg
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+# Marita drukt JA
+  - id: brievenbus_marita_ja
+    alias: Brievenbus - Marita ja
+    initial_state: true
+    triggers:
+      - trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: BRIEVENBUS_MARITA_JA
+    actions:
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: "Marita gaat de brievenbus legen."
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.brievenbus_onderweg
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+# Deze automation controleert elke ochtend om 07:00 of er nog niet-afgehandelde post aanwezig is.
+  - id: brievenbus_ochtendcontrole
+    alias: Brievenbus - Ochtendcontrole
+    initial_state: true
+    triggers:
+      - trigger: time
+        at: "07:00:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.brievenbus_afgehandeld
+        state: "off"
+      - condition: numeric_state
+        entity_id: counter.brievenbus_post_vandaag
+        above: 0
+    actions:
+      - action: script.turn_on
+        target:
+          entity_id: script.brievenbus_notificaties
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+  - id: brievenbus_deur_geopend
+    alias: Brievenbus - Deur geopend
+    initial_state: true
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.brievenbus_deur
+        from: "off"
+        to: "on"
+        for:
+          seconds: 2
+    conditions:
+      # Alleen als er daadwerkelijk post aanwezig is
+      - condition: state
+        entity_id: input_boolean.brievenbus_afgehandeld
+        state: "off"
+      - condition: numeric_state
+        entity_id: counter.brievenbus_post_vandaag
+        above: 0
+    actions:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.brievenbus_onderweg
+      - action: script.turn_on
+        target:
+          entity_id: script.brievenbus_afhandelen
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+  - id: brievenbus_onderweg_controle
+    alias: Brievenbus - Onderweg controle
+    initial_state: true
+    triggers:
+      - trigger: state
+        entity_id: input_boolean.brievenbus_onderweg
+        to: "on"
+        for:
+          minutes: 15
+    conditions:
+      - condition: state
+        entity_id: input_boolean.brievenbus_onderweg
+        state: "on"
+    actions:
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            Vergeet niet de brievenbus te legen.
+            De brievenbusdeur is nog niet geopend.
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            Vergeet niet de brievenbus te legen.
+            De brievenbusdeur is nog niet geopend.
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+  - id: brievenbus_deur_open_te_lang
+    alias: Brievenbus - Deur te lang open
+    initial_state: true
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.brievenbus_deur
+        to: "on"
+        for:
+          minutes: 5
+    actions:
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            De brievenbusdeur staat al langer dan 5 minuten open.
+            Vergeten dicht te doen?
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            De brievenbusdeur staat al langer dan 5 minuten open.
+            Vergeten dicht te doen?
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+# Dit heeft alleen maar zin als je het aantal herinneringen naar 1 gebracht hebt.
+# Anders wordt je gedurende de dag gespamd.
+  - id: brievenbus_avondherinnering
+    alias: Brievenbus - Avondherinnering
+    initial_state: true
+    triggers:
+      - trigger: time
+        at: "18:00:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.brievenbus_afgehandeld
+        state: "off"
+      - condition: numeric_state
+        entity_id: counter.brievenbus_post_vandaag
+        above: 0
+    actions:
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            Vergeet niet de brievenbus te legen.
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          title: "📬 Brievenbus"
+          message: >
+            Vergeet niet de brievenbus te legen.
+    trace:
+      stored_traces: 10
+    mode: single
+
+
+  - id: brievenbus_laatste_deuropening
+    alias: Brievenbus - Laatste deuropening registreren
+    initial_state: true
+    description: >
+      Registreert het tijdstip waarop de brievenbusdeur wordt geopend.
+      Dit tijdstip wordt gebruikt om te bepalen of een klepbeweging
+      binnen 3 seconden gevolgd wordt door het openen van de deur,
+      zodat een eigen controle van de brievenbus niet als postbezorging
+      wordt geregistreerd.
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.brievenbus_deur
+        from: "off"
+        to: "on"
+    actions:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.brievenbus_laatste_deuropening
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+    trace:
+      stored_traces: 10
+    mode: restart
