@@ -1,0 +1,116 @@
+brievenbus_notificaties:
+  alias: Brievenbus notificaties
+  sequence:
+    # Stop direct als de brievenbus al is afgehandeld
+    - condition: state
+      entity_id: input_boolean.brievenbus_afgehandeld
+      state: "off"
+    # Melding Persoon1
+    - action: notify.mobile_app_<persoon1_id_here>
+      data:
+        title: "📬 Er is post"
+        message: >
+          Er is post ontvangen.
+
+          Aantal detecties:
+          {{ states('counter.brievenbus_post_vandaag') }}
+
+          Laatste detectie:
+          {{ states('input_datetime.brievenbus_laatste_detectie') }}
+
+          Wil je de brievenbus legen?
+        data:
+          ttl: 0
+          priority: high
+          tag: brievenbus
+          persistent: true
+          actions:
+            - action: BRIEVENBUS_HENK_NEE
+              title: "Nee"
+            - action: BRIEVENBUS_HENK_JA
+              title: "Ja"
+
+    # Melding Persoon2
+    - action: notify.mobile_app_<persoon2_id_here>
+      data:
+        title: "📬 Er is post"
+        message: >
+          Er is post ontvangen.
+
+          Aantal detecties:
+          {{ states('counter.brievenbus_post_vandaag') }}
+
+          Laatste detectie:
+          {{ states('input_datetime.brievenbus_laatste_detectie') }}
+
+          Wil je de brievenbus legen?
+        data:
+          ttl: 0
+          priority: high
+          tag: brievenbus
+          persistent: true
+          actions:
+            - action: BRIEVENBUS_MARITA_NEE
+              title: "Nee"
+            - action: BRIEVENBUS_MARITA_JA
+              title: "Ja"
+  trace:
+    stored_traces: 10
+  mode: restart
+
+
+brievenbus_afhandelen:
+  alias: Brievenbus afhandelen
+  sequence:
+    - condition: numeric_state
+      entity_id: counter.brievenbus_post_vandaag
+      above: 0
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.brievenbus_afgehandeld
+    - action: counter.reset
+      target:
+        entity_id: counter.brievenbus_post_vandaag
+    - action: script.turn_off
+      target:
+        entity_id: script.brievenbus_notificaties
+    - action: notify.mobile_app_<persoon1_id_here>
+      data:
+        message: clear_notification
+        data:
+          tag: brievenbus
+          ttl: 0
+          priority: high
+    - action: notify.mobile_app_<persoon2_id_here>
+      data:
+        message: clear_notification
+        data:
+          tag: brievenbus
+          ttl: 0
+          priority: high
+    - action: notify.mobile_app_<persoon1_id_here>
+      data:
+        title: "📬 Brievenbus"
+        message: "Brievenbus afgehandeld."
+        data:
+          tag: brievenbus_afgehandeld
+    - action: notify.mobile_app_<persoon2_id_here>
+      data:
+        title: "📬 Brievenbus"
+        message: "Brievenbus afgehandeld."
+        data:
+          tag: brievenbus_afgehandeld
+    - delay: "00:03:00"
+    - action: notify.mobile_app_<persoon1_id_here>
+      data:
+        message: clear_notification
+        data:
+          tag: brievenbus_afgehandeld
+    - action: notify.mobile_app_<persoon2_id_here>
+      data:
+        message: clear_notification
+        data:
+          tag: brievenbus_afgehandeld
+  trace:
+    stored_traces: 10
+  mode: single
