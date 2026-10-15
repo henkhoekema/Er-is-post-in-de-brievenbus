@@ -239,9 +239,7 @@
       stored_traces: 10
     mode: single
 
-
-# Dit heeft alleen maar zin als je het aantal herinneringen naar 1 gebracht hebt.
-# Anders wordt je gedurende de dag gespamd.
+
   - id: brievenbus_avondherinnering
     alias: Brievenbus - Avondherinnering
     initial_state: true
