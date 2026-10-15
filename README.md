@@ -6,9 +6,10 @@
 
 # Er-is-post-in-de-brievenbus  📬
 Home Assistant automations en scripts voor het smart maken van je brievenbus.
-```text
-
-```
+<br>
+<br>
+<br>
+<br>
 Ik wil een klein projectje delen dat ik gemaakt heb: een slimme brievenbus die mij en mijn vrouw een melding op onze telefoon geeft zodra er nieuwe post is.
 
 Zo maak je van een gewone, 'domme' brievenbus in een handomdraai een slimme brievenbus met Home Assistant.
@@ -104,7 +105,8 @@ input_boolean:
 ```
 
 > **Let op:** bovenstaande YAML-fragmenten laten de configuratie van de helpers zien. Plaats ze op de juiste plek in je eigen Home Assistant-configuratie. Gebruik je de YAML-configuratie voor helpers, let dan op de bestaande structuur van je configuratiebestand. Maak je de helpers via de gebruikersinterface aan, dan hoef je deze YAML niet over te nemen.
-
+<br>
+<br>
 
 ```
 ** Een mogelijke mappenstructuur **
