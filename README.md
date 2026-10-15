@@ -104,7 +104,7 @@ input_boolean:
     icon: mdi:walk
 ```
 
-> **Let op:** bovenstaande YAML-fragmenten laten de configuratie van de helpers zien. Plaats ze op de juiste plek in je eigen Home Assistant-configuratie. Gebruik je de YAML-configuratie voor helpers, let dan op de bestaande structuur van je configuratiebestand. Maak je de helpers via de gebruikersinterface aan, dan hoef je deze YAML niet over te nemen.
+> **Let op:** bovenstaande YAML-fragmenten laten de configuratie van de helpers zien. Plaats ze op de juiste plek in je eigen Home Assistant-configuratie. Gebruik je de YAML-configuratie voor helpers, let dan op de bestaande structuur van je configuratiebestand. Maak je de helpers via de gebruikersinterface aan, dan hoef je deze YAML niet over te nemen. <br><br> Vergeet niet om notify.mobile_app_<Persoon1_id_here> en notify.mobile_app_<Persoon2_id_here> in zowel de automations als de scripts te hernoemen naar je eigen telefoon. 
 <br>
 <br>
 
@@ -122,7 +122,8 @@ home-assistant-slimme-brievenbus/
 └── images/
     └── brievenbus-opstelling.jpg
 ```
-    
+<br>
+
 ## Een melding zodra er post is!
 
 Zodra er post in de brievenbus valt, krijgen mijn vrouw en ik allebei een melding op onze telefoon.
