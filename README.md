@@ -1,9 +1,9 @@
 # Er-is-post-in-de-brievenbus  📬
 Home Assistant automations en scripts voor het smart maken van je brievenbus.
+```text
 
-
-
-Ik een klein projectje delen dat ik gemaakt heb: een slimme brievenbus die mij en mijn vrouw een melding op onze telefoon geeft zodra er nieuwe post is.
+```
+Ik wil een klein projectje delen dat ik gemaakt heb: een slimme brievenbus die mij en mijn vrouw een melding op onze telefoon geeft zodra er nieuwe post is.
 
 Zo maak je van een gewone, 'domme' brievenbus in een handomdraai een slimme brievenbus met Home Assistant.
 
