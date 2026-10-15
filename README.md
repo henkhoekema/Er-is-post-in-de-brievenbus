@@ -117,10 +117,9 @@ home-assistant-slimme-brievenbus/
 │   ├── brievenbus_post_gedetecteerd.yaml
 │   └── ...
 ├── scripts/
-│   ├── brievenbus_afhandelen.yaml
-│   └── ...
-└── images/
-    └── brievenbus-opstelling.jpg
+    ├── brievenbus_afhandelen.yaml
+    └── ...
+
 ```
 <br>
 
