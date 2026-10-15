@@ -33,7 +33,7 @@ Voor dit project heb ik twee sensoren en vijf helpers aangemaakt.
 - 1 sensor voor de beweging van de klep.
 - 1 sensor om het openen en sluiten van het deurtje te detecteren.
 - Home Assistant met de benodigde automations, scripts en helpers.
-- Een telefoonn meldingssysteem dat acties ondersteunt, zoals de Home Assistant Companion-app.
+
 
 ### De sensoren
 
