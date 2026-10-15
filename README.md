@@ -1,3 +1,9 @@
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026%2B-blue.svg)
+![Script](https://img.shields.io/badge/Home%20Assistant-Script-success.svg)
+![License](https://img.shields.io/badge/License-Community-green.svg)
+
+
+
 # Er-is-post-in-de-brievenbus  📬
 Home Assistant automations en scripts voor het smart maken van je brievenbus.
 ```text
