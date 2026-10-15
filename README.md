@@ -111,8 +111,6 @@ input_boolean:
 ```
 ** Een mogelijke mappenstructuur **
 
-home-assistant-slimme-brievenbus/
-├── README.md
 ├── automations/
 │   ├── brievenbus_post_gedetecteerd.yaml
 │   └── ...
