@@ -71,13 +71,13 @@
         target:
           entity_id: script.brievenbus_notificaties
 
-      - action: notify.henk
+      - action: notify.mobile_app_<persoon1_id_here>
         data:
           message: clear_notification
           data:
             tag: brievenbus
 
-      - action: notify.marita
+      - action: notify.mobile_app_<persoon2_id_here>
         data:
           message: clear_notification
           data:
@@ -212,6 +212,16 @@
     actions:
       - action: notify.mobile_app_<persoon1_id_here>
         data:
+          message: clear_notification
+          data:
+            tag: brievenbus
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          message: clear_notification
+          data:
+            tag: brievenbus
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
           title: "📬 Brievenbus"
           message: >
             Vergeet niet de brievenbus te legen.
@@ -269,6 +279,16 @@
         entity_id: counter.brievenbus_post_vandaag
         above: 0
     actions:
+      - action: notify.mobile_app_<persoon1_id_here>
+        data:
+          message: clear_notification
+          data:
+            tag: brievenbus
+      - action: notify.mobile_app_<persoon2_id_here>
+        data:
+          message: clear_notification
+          data:
+            tag: brievenbus
       - action: notify.mobile_app_<persoon1_id_here>
         data:
           title: "📬 Brievenbus"
