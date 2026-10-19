@@ -2,74 +2,87 @@
     alias: Brievenbus - Post gedetecteerd
     initial_state: true
     description: >
+      v 1.01
       Registreert nieuwe post alleen wanneer de klep beweegt,
       de deur gesloten is en er niet recent een deuropening is geweest.
-      Zo worden bewegingen van de eigen hand tijdens het controleren
-      van de brievenbus niet als postbezorging geregistreerd.
+      Eigen bewegingen tijdens het controleren van de brievenbus
+      worden hierdoor zoveel mogelijk genegeerd.
+
     triggers:
       - trigger: state
         entity_id: binary_sensor.brievenbus_klep
         from: "off"
         to: "on"
+
     conditions:
-      # Voorkom dubbele postmeldingen binnen 60 seconden
-      # (Contactdender-onderdrukking)
+      # Voorkom dubbele postdetecties binnen 60 seconden
       - condition: template
         value_template: >
           {% set laatste = states('input_datetime.brievenbus_laatste_detectie') %}
           {{ laatste in ['unknown','unavailable','none','']
              or (as_timestamp(now()) -
              as_timestamp(laatste,0)) >= 60 }}
+
     actions:
-      # Wacht 3 seconden zodat een deuropening geregistreerd kan worden
+      # Wacht zodat de deuropening geregistreerd kan worden
       - delay:
           seconds: 3
-      # Negeer beweging als de deur nog openstaat
+          
+    # In dit geval staan de volgende condities bewust onder actions, en dat is correct.
+    # Het verschil zit in wanneer Home Assistant de controle moet uitvoeren.
+    # Onder conditions worden de voorwaarden gecontroleerd voordat de automation begint.
+    # Op dat moment is de deuropening mogelijk nog niet geregistreerd,
+    # omdat we de klepsensor eerst 3 seconden de tijd willen geven.
+    # Onder actions kunnen we eerst wachten en daarna de conditie controleren.
+    # Als we deze conditie naar het bovenste gedeelte conditions verplaatsen, wordt de controle dus te vroeg uitgevoerd.
+      # Negeer de detectie als de deur nog openstaat
       - condition: state
         entity_id: binary_sensor.brievenbus_deur
         state: "off"
 
-      # In dit geval staat de onderstaande conditie bewust onder actions, en dat is correct.
-      # Het verschil zit in wanneer Home Assistant de controle moet uitvoeren.
-      # Onder conditions worden de voorwaarden gecontroleerd voordat de automation begint.
-      # Op dat moment is de deuropening mogelijk nog niet geregistreerd omdat
-      # we de klepsensor eerst 15 seconden de tijd willen geven.
-
-      # Negeer beweging binnen 15 seconden na de laatste deuropening
+      # Negeer de detectie binnen 60 seconden na deuropening
       - condition: template
         value_template: >
           {% set deur = states('input_datetime.brievenbus_laatste_deuropening') %}
           {{ deur in ['unknown','unavailable','none','']
              or (as_timestamp(now()) -
-             as_timestamp(deur,0)) > 15 }}
+             as_timestamp(deur,0)) > 60 }}
+
       # Registreer de post
       - action: counter.increment
         target:
           entity_id: counter.brievenbus_post_vandaag
+
       - action: input_datetime.set_datetime
         target:
           entity_id: input_datetime.brievenbus_laatste_detectie
         data:
           datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.brievenbus_afgehandeld
+
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.brievenbus_onderweg
+
       - action: script.turn_off
         target:
           entity_id: script.brievenbus_notificaties
-      - action: notify.mobile_app_<persoon1_id_here>
+
+      - action: notify.henk
         data:
           message: clear_notification
           data:
             tag: brievenbus
-      - action: notify.mobile_app_<persoon2_id_here>
+
+      - action: notify.marita
         data:
           message: clear_notification
           data:
             tag: brievenbus
+
       # Alleen direct meldingen sturen tussen 07:00 en 22:00
       - choose:
           - conditions:
@@ -80,6 +93,7 @@
               - action: script.turn_on
                 target:
                   entity_id: script.brievenbus_notificaties
+
     trace:
       stored_traces: 10
     mode: single
@@ -239,7 +253,8 @@
       stored_traces: 10
     mode: single
 
-
+
+
   - id: brievenbus_avondherinnering
     alias: Brievenbus - Avondherinnering
     initial_state: true
