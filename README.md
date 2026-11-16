@@ -254,6 +254,12 @@ Een brievenbussysteem dat rekening houdt met allerlei situaties uit het dagelijk
 
 Heb je zelf al eens iets vergelijkbaars gebouwd, of heb je ideeën om dit systeem nog slimmer te maken? Dan hoor ik het graag.
 
+## Entity-ID's aanpassen
+
+De entity-ID's in dit project zijn voorbeelden uit mijn eigen Home Assistant-installatie. Vervang deze door de overeenkomstige entity-ID's uit jouw eigen installatie. Controleer daarbij alle YAML-bestanden, inclusief de templates, automatiseringen en het dashboard. Let ook op de gebruikte notificatieservices en helpers.
+
+Hoe je dit eenvoudig kunt doen, lees je in mijn aparte handleiding: [Entities – Entity-ID's aanpassen](https://github.com/henkhoekema/Entities).
+
 ## Licentie en gebruiksvoorwaarden
 
 Deze automatisering mag vrij worden gebruikt en aangepast voor eigen gebruik.
